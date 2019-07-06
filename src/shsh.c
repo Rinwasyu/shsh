@@ -29,11 +29,12 @@
 
 #define PROG_NAME "shsh"
 #define PROG_FULLNAME "(((ง'ω')و三 ง'ω')ڡ≡ shsh"
-#define PROG_VERSION "0.0.2.1-alpha"
+#define PROG_VERSION "0.0.2.4-alpha"
 
 /*
 TODO: ↑ → ↓ ←
 TODO: input
+TODO: TAB
 */
 
 void print_version() {
@@ -49,9 +50,46 @@ void print_help() {
 	printf("\t-h, --help\n");
 }
 
-void exec_command(char *command, char **envp) {
+void shsh_init() {
+	system("stty stop undef");
+	system("stty start undef");
+	system("stty -echo -icanon min 1 time 0");
+}
+
+void shsh_exit() {
+	system("stty sane");
+}
+
+void builtin_cd(char *arg) {
+	//TODO:
+	char shsh_pwd[BUF_SIZE] = {0};
+	snprintf(shsh_pwd, BUF_SIZE, getenv("PWD"));
+
+	if (strcmp(arg, "..") == 0) {
+		for (int i = strlen(shsh_pwd) - 1; i > 1; i--) {
+			if (shsh_pwd[i] == '/') {
+				shsh_pwd[i] = '\0';
+				break;
+			}
+		}
+	} else {
+		if (shsh_pwd[strlen(shsh_pwd)-1] != '/') {
+			snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), "/");
+		}
+		snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), arg);
+		printf("cd to %s\n", shsh_pwd);
+	}
+
+	if (chdir(shsh_pwd) == 0) { // Success
+		setenv("PWD", shsh_pwd, 1);
+	} else {
+		printf("Error\n");
+	}
+}
+
+void exec_command(char *command) {
 	// TODO: Search for PATH...done
-	// TODO: Support built-in coumands (cd, export, etc.)
+	// TODO: Support built-in coumands (cd...done, pwd...done, export, etc.)
 	// TODO: Run ShellScript
 	char *prog = NULL;
 	char *args[BUF_SIZE] = {NULL};
@@ -63,31 +101,42 @@ void exec_command(char *command, char **envp) {
 	args[0] = prog;
 	for (int i = 1; i < BUF_SIZE && (args[i] = strtok(NULL, " ")) != NULL; i++);
 
-	char shsh_path[BUF_SIZE] = {0};
-	snprintf(shsh_path, BUF_SIZE, getenv("PATH"));
-	char *path = strtok(shsh_path, ":");
-	do {
-		char prog_path[BUF_SIZE] = {0};
-		snprintf(prog_path, BUF_SIZE, path);
-		snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), "/");
-		snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), prog);
-		// PATH/prog
-		execve(prog_path, args, envp);
-	} while ((path = strtok(NULL, ":")) != NULL);
-	// ./prog
-	execve(prog, args, envp);
+	// Built-in commands
+	if (strcmp(prog, "cd") == 0) {
+		// cd command
+		builtin_cd(args[1]);
+		return;
+	} else if (strcmp(prog, "pwd") == 0) {
+		printf("%s\n", getenv("PWD"));
+		return;
+	}
 
-	printf("%s: %s: command not found\n", PROG_NAME, command);
-}
+	int pid = fork();
+	if (pid == 0) {
+		shsh_exit();
+		signal(SIGINT, SIG_DFL);
 
-void shsh_init() {
-	system("stty stop undef");
-	system("stty start undef");
-	system("stty -echo -icanon min 1 time 0");
-}
+		char shsh_path[BUF_SIZE] = {0};
+		snprintf(shsh_path, BUF_SIZE, getenv("PATH"));
+		char *path = strtok(shsh_path, ":");
+		do {
+			char prog_path[BUF_SIZE] = {0};
+			snprintf(prog_path, BUF_SIZE, path);
+			if (prog_path[strlen(prog_path)-1] != '/') { // /hogehoge →  /hogehoge/
+				snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), "/");
+			}
+			snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), prog);
+			// PATH/prog
+			execv(prog_path, args);
+		} while ((path = strtok(NULL, ":")) != NULL);
+		// ./prog
+		execv(prog, args);
+		printf("%s: %s: command not found\n", PROG_NAME, command);
 
-void shsh_exit() {
-	system("stty sane");
+		exit(-1);
+	}
+	waitpid(pid, NULL, 0);
+	shsh_init();
 }
 
 int main(int argc, char **argv, char **envp) {
@@ -98,16 +147,12 @@ int main(int argc, char **argv, char **envp) {
 		if (argv[i][0] == '-') {
 			if (strcmp(&argv[i][1], "c") == 0) {
 				// -c option
-				int pid = fork();
-				if (pid == 0) {
-					if (argc > i+1) {
-						exec_command(argv[i+1], envp);
-					} else {
-						printf("%s: -c: option requires an argument\n", PROG_NAME);
-					}
+				if (argc > i+1) {
+					exec_command(argv[i+1]);
+				} else {
+					printf("%s: -c: option requires an argument\n", PROG_NAME);
 					return -1;
 				}
-				waitpid(pid, NULL, 0);
 				return 0;
 			} else if (strcmp(&argv[i][1], "v") == 0 || strcmp(&argv[i][1], "-version") == 0) {
 				// -v or --version option
@@ -152,88 +197,82 @@ int main(int argc, char **argv, char **envp) {
 	while ((c = getchar()) != EOF) {
 		// DEBUG
 		//printf("keycode : %d\n", c);
-		if (c == 10) { // Enter
-			printf("\n");
-			int pid = fork();
-			if (pid == 0) {
+		// TODO: here
+		if (mode == Insert) {
+			if (c == 4) { // Ctrl-D
+				printf("exit");
 				shsh_exit();
-				signal(SIGINT, SIG_DFL);
-				exec_command(command, envp);
-				return -1;
+				break;
+			} else if (c == 9) { // Tab
+			} else if (c == 10) { // Enter
+				printf("\n");
+
+				exec_command(command);
+
+				memset(command, 0, sizeof(char) * BUF_SIZE);
+				printf("<%s@%s> $ ", shsh_logname, strtok(shsh_hostname, "."));
+				mode = Insert;
+				cursor_x = 0;
+			} else if (c == 27) {
+				mode = Esc;
+			} else if (c == 127) {
+				if (strlen(command) > 0) {
+					command[strlen(command)-1] = '\0';
+					printf("\b \b");
+					cursor_x--;
+				}
+			} else {
+				// input
+				if (strlen(command) < BUF_SIZE - 1) {
+					for (int i = cursor_x; i < strlen(command); i++)
+						printf(" ");
+					for (int i = cursor_x; i < strlen(command); i++)
+						printf("\b");
+
+					for (int i = cursor_x, ch = c; i < strlen(command) + 1; i++) {
+						char swap = command[i];
+						printf("%c", ch);
+						command[i] = ch;
+						ch = swap;
+					}
+
+					for (int i = 0; i < strlen(command) - cursor_x - 1; i++)
+						printf("\b");
+					cursor_x++;
+				}
 			}
-			waitpid(pid, NULL, 0);
-			shsh_init();
-			memset(command, 0, sizeof(char) * BUF_SIZE);
-			printf("<%s@%s> $ ", shsh_logname, strtok(shsh_hostname, "."));
-			mode = Insert;
-			cursor_x = 0;
-		} else {
-			// TODO: here
-			if (mode == Insert) {
-				if (c == 4) { // Ctrl-D
-					printf("exit");
-					shsh_exit();
-					break;
-				} else if (c == 27) {
-					mode = Esc;
-				} else if (c == 127) {
-					if (strlen(command) > 0) {
-						command[strlen(command)-1] = '\0';
-						printf("\b \b");
-						cursor_x--;
-					}
-				} else {
-					// input
-					if (strlen(command) < BUF_SIZE - 1) {
-						for (int i = cursor_x; i < strlen(command); i++)
-							printf(" ");
-						for (int i = cursor_x; i < strlen(command); i++)
-							printf("\b");
-
-						for (int i = cursor_x, ch = c; i < strlen(command) + 1; i++) {
-							char swap = command[i];
-							printf("%c", ch);
-							command[i] = ch;
-							ch = swap;
-						}
-
-						for (int i = 0; i < strlen(command) - cursor_x - 1; i++)
-							printf("\b");
-						cursor_x++;
-					}
-				}
-			} else if (mode == Esc) {
-				if (c == 79 || c == 91) {
-					mode = Bracket;
-				} else {
-					mode = Insert;
-				}
-			} else if (mode == Bracket) {
-				if (c == 49 || c == 52) {
-					mode = Numpad;
-				} else if (c == 65) {
-					mode = Insert;
-				} else if (c == 66) {
-					mode = Insert;
-				} else if (c == 67) { // RIGHT→
-					if (cursor_x < strlen(command)) {
-						printf("\e[1C");
-						cursor_x++;
-					}
-					mode = Insert;
-				} else if (c == 68) { // Left←
-					if (cursor_x > 0) {
-						printf("\e[1D");
-						cursor_x--;
-					}
-					mode = Insert;
-				}
-				// TODO:
-			} else if (mode == Numpad) {
+		} else if (mode == Esc) {
+			if (c == 79 || c == 91) {
+				mode = Bracket;
+			} else {
 				mode = Insert;
 			}
+		} else if (mode == Bracket) {
+			if (c == 49 || c == 52) {
+				mode = Numpad;
+			} else if (c == 65) {
+				mode = Insert;
+			} else if (c == 66) {
+				mode = Insert;
+			} else if (c == 67) { // RIGHT→
+				if (cursor_x < strlen(command)) {
+					printf("\e[1C");
+					cursor_x++;
+				}
+				mode = Insert;
+			} else if (c == 68) { // Left←
+				if (cursor_x > 0) {
+					printf("\e[1D");
+					cursor_x--;
+				}
+				mode = Insert;
+			}
+			// TODO:
+		} else if (mode == Numpad) {
+			mode = Insert;
 		}
 	}
+
 
 	// See you!
 	printf("\n");
