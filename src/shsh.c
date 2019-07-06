@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <unistd.h>
 #include <sys/wait.h>
 
@@ -28,7 +29,7 @@
 
 #define PROG_NAME "shsh"
 #define PROG_FULLNAME "(((ง'ω')و三 ง'ω')ڡ≡ shsh"
-#define PROG_VERSION "0.0.2-alpha"
+#define PROG_VERSION "0.0.2.1-alpha"
 
 /*
 TODO: ↑ → ↓ ←
@@ -144,6 +145,8 @@ int main(int argc, char **argv, char **envp) {
 	snprintf(shsh_logname, BUF_SIZE, getenv("LOGNAME"));
 	snprintf(shsh_hostname, BUF_SIZE, getenv("HOSTNAME"));
 
+	signal(SIGINT, SIG_IGN);
+
 	shsh_init();
 	printf("<%s@%s> $ ", shsh_logname, strtok(shsh_hostname, "."));
 	while ((c = getchar()) != EOF) {
@@ -154,6 +157,7 @@ int main(int argc, char **argv, char **envp) {
 			int pid = fork();
 			if (pid == 0) {
 				shsh_exit();
+				signal(SIGINT, SIG_DFL);
 				exec_command(command, envp);
 				return -1;
 			}
