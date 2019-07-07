@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -29,12 +30,16 @@
 
 #define PROG_NAME "shsh"
 #define PROG_FULLNAME "(((ง'ω')و三 ง'ω')ڡ≡ shsh"
-#define PROG_VERSION "0.0.2.5-alpha"
+#define PROG_VERSION "0.0.2.6-alpha"
+
+#include "wildcard.c"
 
 /*
 TODO: ↑ → ↓ ←
 TODO: input
 TODO: TAB
+TODO: Awesome error messages
+TODO: Split file
 */
 
 void print_version() {
@@ -61,7 +66,8 @@ void shsh_exit() {
 }
 
 void builtin_cd(char *arg) {
-	//TODO: WILDCARD
+	// TODO: WILDCARD
+	// TODO: Add more features
 	char shsh_pwd[BUF_SIZE] = {0};
 	snprintf(shsh_pwd, BUF_SIZE, getenv("PWD"));
 
@@ -73,10 +79,32 @@ void builtin_cd(char *arg) {
 			}
 		}
 	} else {
+		DIR *dir;
+		struct dirent *dp;
+
+		if ((dir = opendir(".")) == NULL) {
+			exit(-1);
+		}
+
+		// WILDCARD
+		char real_name[BUF_SIZE] = {0};
+		for (dp = readdir(dir); dp != NULL; dp = readdir(dir)) {
+			if (wildcard_match(arg, dp->d_name)) {
+				memset(real_name, 0, sizeof(char) * BUF_SIZE);
+				snprintf(real_name, BUF_SIZE, dp->d_name);
+				break;
+			}
+		}
+
+		if (strlen(real_name) == 0) {
+			printf("No such file or directory\n");
+			return;
+		}
+
 		if (shsh_pwd[strlen(shsh_pwd)-1] != '/') {
 			snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), "/");
 		}
-		snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), arg);
+		snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), real_name);
 	}
 
 	if (chdir(shsh_pwd) == 0) { // Success
@@ -91,6 +119,7 @@ void exec_command(char *command) {
 	// TODO: Support built-in coumands (cd...done, pwd...done, export, etc.)
 	// TODO: Run ShellScript
 	// TODO: Run program correctly if your own program name conflict with the system program
+	// TODO: WILDCARD
 	char *prog = NULL;
 	char *args[BUF_SIZE] = {NULL};
 
@@ -139,6 +168,7 @@ void exec_command(char *command) {
 	shsh_init();
 }
 
+// TODO: Make main function shorter (Split function)
 int main(int argc, char **argv, char **envp) {
 	// Read options
 	// TODO: Support other options
@@ -177,6 +207,8 @@ int main(int argc, char **argv, char **envp) {
 		}
 	}
 
+	// Prompt
+	// TODO: Support command history
 	char c;
 	char *command = (char *)malloc(sizeof(char) * BUF_SIZE);
 	char **command_history = (char **)malloc(sizeof(char *) * BUF_SIZE);
@@ -193,6 +225,7 @@ int main(int argc, char **argv, char **envp) {
 	signal(SIGINT, SIG_IGN);
 
 	shsh_init();
+	// TODO: print current directory name
 	printf("<%s@%s> $ ", shsh_logname, strtok(shsh_hostname, "."));
 	while ((c = getchar()) != EOF) {
 		// DEBUG
@@ -274,7 +307,6 @@ int main(int argc, char **argv, char **envp) {
 				}
 				mode = Insert;
 			}
-			// TODO:
 		} else if (mode == Numpad) {
 			mode = Insert;
 		}
