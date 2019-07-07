@@ -29,7 +29,7 @@
 
 #define PROG_NAME "shsh"
 #define PROG_FULLNAME "(((ง'ω')و三 ง'ω')ڡ≡ shsh"
-#define PROG_VERSION "0.0.2.4-alpha"
+#define PROG_VERSION "0.0.2.5-alpha"
 
 /*
 TODO: ↑ → ↓ ←
@@ -61,7 +61,7 @@ void shsh_exit() {
 }
 
 void builtin_cd(char *arg) {
-	//TODO:
+	//TODO: WILDCARD
 	char shsh_pwd[BUF_SIZE] = {0};
 	snprintf(shsh_pwd, BUF_SIZE, getenv("PWD"));
 
@@ -77,7 +77,6 @@ void builtin_cd(char *arg) {
 			snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), "/");
 		}
 		snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), arg);
-		printf("cd to %s\n", shsh_pwd);
 	}
 
 	if (chdir(shsh_pwd) == 0) { // Success
@@ -91,6 +90,7 @@ void exec_command(char *command) {
 	// TODO: Search for PATH...done
 	// TODO: Support built-in coumands (cd...done, pwd...done, export, etc.)
 	// TODO: Run ShellScript
+	// TODO: Run program correctly if your own program name conflict with the system program
 	char *prog = NULL;
 	char *args[BUF_SIZE] = {NULL};
 
@@ -216,10 +216,17 @@ int main(int argc, char **argv, char **envp) {
 			} else if (c == 27) {
 				mode = Esc;
 			} else if (c == 127) {
-				if (strlen(command) > 0) {
-					command[strlen(command)-1] = '\0';
-					printf("\b \b");
+				// Backspace
+				if (strlen(command) > 0 && cursor_x > 0) {
+					int s_len = strlen(command);
 					cursor_x--;
+					printf("\b");
+					for (int i = cursor_x; i < s_len; i++) {
+						command[i] = command[i + 1];
+						printf("%c", command[i] ? command[i] : ' ');
+					}
+					for (int i = cursor_x; i < s_len; i++)
+						printf("\b");
 				}
 			} else {
 				// input
