@@ -30,7 +30,7 @@
 
 #define PROG_NAME "shsh"
 #define PROG_FULLNAME "(((ง'ω')و三 ง'ω')ڡ≡ shsh"
-#define PROG_VERSION "0.0.2.6-alpha"
+#define PROG_VERSION "0.0.2.7-alpha"
 
 #include "wildcard.c"
 
@@ -40,6 +40,8 @@ TODO: input
 TODO: TAB
 TODO: Awesome error messages
 TODO: Split file
+TODO: Run script file
+TODO: Refactor
 */
 
 void print_version() {
@@ -89,10 +91,12 @@ void builtin_cd(char *arg) {
 		// WILDCARD
 		char real_name[BUF_SIZE] = {0};
 		for (dp = readdir(dir); dp != NULL; dp = readdir(dir)) {
-			if (wildcard_match(arg, dp->d_name)) {
-				memset(real_name, 0, sizeof(char) * BUF_SIZE);
-				snprintf(real_name, BUF_SIZE, dp->d_name);
-				break;
+			if (dp->d_name[0] != '.') { // exclude . and ..
+				if (wildcard_match(arg, dp->d_name)) {
+					memset(real_name, 0, sizeof(char) * BUF_SIZE);
+					snprintf(real_name, BUF_SIZE, dp->d_name);
+					break;
+				}
 			}
 		}
 
