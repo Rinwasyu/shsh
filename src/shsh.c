@@ -30,7 +30,7 @@
 
 #define PROG_NAME "shsh"
 #define PROG_FULLNAME "(((ง'ω')و三 ง'ω')ڡ≡ shsh"
-#define PROG_VERSION "0.0.2.7-alpha"
+#define PROG_VERSION "0.0.2.8-alpha"
 
 #include "wildcard.c"
 
@@ -39,9 +39,9 @@ TODO: ↑ → ↓ ←
 TODO: input
 TODO: TAB
 TODO: Awesome error messages
-TODO: Split file
+TODO: Split file (priority : VERY_HIGH)
 TODO: Run script file
-TODO: Refactor
+TODO: REFACTOR
 */
 
 void print_version() {
@@ -65,6 +65,35 @@ void shsh_init() {
 
 void shsh_exit() {
 	system("stty sane");
+}
+
+char **filenames_wildcard(char *dirname, char *wildcard) {
+	char **filenames = (char **)malloc(sizeof(char *) * BUF_SIZE);;
+	int filenames_i = 0;
+
+	DIR *dir;
+	struct dirent *dp;
+
+	if ((dir = opendir(dirname)) == NULL) {
+		exit(-1);
+	}
+
+	for (dp = readdir(dir); dp != NULL; dp = readdir(dir)) {
+		if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) { // exclude . and ..
+			if (wildcard_match(wildcard, dp->d_name)) {
+				filenames[filenames_i] = (char *)malloc(sizeof(char) * BUF_SIZE);
+				memset(filenames[filenames_i], 0, sizeof(char) * BUF_SIZE);
+				snprintf(filenames[filenames_i], BUF_SIZE, dp->d_name);
+				filenames_i++;
+			}
+		}
+	}
+
+	if (filenames_i == 0) {
+		filenames[0] = wildcard;
+	}
+
+	return filenames;
 }
 
 void builtin_cd(char *arg) {
@@ -91,7 +120,7 @@ void builtin_cd(char *arg) {
 		// WILDCARD
 		char real_name[BUF_SIZE] = {0};
 		for (dp = readdir(dir); dp != NULL; dp = readdir(dir)) {
-			if (dp->d_name[0] != '.') { // exclude . and ..
+			if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) { // exclude . and ..
 				if (wildcard_match(arg, dp->d_name)) {
 					memset(real_name, 0, sizeof(char) * BUF_SIZE);
 					snprintf(real_name, BUF_SIZE, dp->d_name);
@@ -132,16 +161,31 @@ void exec_command(char *command) {
 	prog = strtok(command, " ");
 
 	args[0] = prog;
-	for (int i = 1; i < BUF_SIZE && (args[i] = strtok(NULL, " ")) != NULL; i++);
+
 
 	// Built-in commands
 	if (strcmp(prog, "cd") == 0) {
 		// cd command
-		builtin_cd(args[1]);
+		char *arg;
+		if ((arg = strtok(NULL, " ")) != NULL) {
+			builtin_cd(arg);
+		} else {
+			builtin_cd("~");
+		}
 		return;
 	} else if (strcmp(prog, "pwd") == 0) {
 		printf("%s\n", getenv("PWD"));
 		return;
+	}
+
+	for (int i = 1; i < BUF_SIZE && (args[i] = strtok(NULL, " ")) != NULL; i++) {
+		if (args[i][0] != '-' && args[i][0] != '"' && args[i][0] != '\'') {
+			char **filenames = filenames_wildcard(".", args[i]);
+			for (int j = 0; filenames[j] != NULL && i < BUF_SIZE; j++) {
+				args[i] = filenames[j];
+				if (filenames[j+1] != NULL) i++;
+			}
+		}
 	}
 
 	int pid = fork();
