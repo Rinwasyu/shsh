@@ -30,7 +30,7 @@
 
 #define PROG_NAME "shsh"
 #define PROG_FULLNAME "(((ง'ω')و三 ง'ω')ڡ≡ shsh"
-#define PROG_VERSION "0.0.2.8-alpha"
+#define PROG_VERSION "0.0.2.9-alpha"
 
 #include "wildcard.c"
 
@@ -352,6 +352,16 @@ int main(int argc, char **argv, char **envp) {
 				if (cursor_x > 0) {
 					printf("\e[1D");
 					cursor_x--;
+				}
+				mode = Insert;
+			} else if (c == 70) { // End→→
+				for (; command[cursor_x] != '\0'; cursor_x++) {
+					printf("\e[1C");
+				}
+				mode = Insert;
+			} else if (c == 72) { // Home←←
+				for (; cursor_x > 0; cursor_x--) {
+					printf("\e[1D");
 				}
 				mode = Insert;
 			}
