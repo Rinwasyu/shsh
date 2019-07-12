@@ -18,6 +18,10 @@
  *
  */
 
+#include <string.h>
+
+#include "wildcard.h"
+
 int wildcard_match(char *wc, char *str) {
 	int is_match = 1;
 	int wc_i = 0;

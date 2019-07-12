@@ -10,7 +10,7 @@ A shell.
 ## Build
 ```Shell
 cd src
-gcc -o shsh shsh.c
+make
 ```
 
 ## Usage

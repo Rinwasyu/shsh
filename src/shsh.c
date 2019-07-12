@@ -23,16 +23,10 @@
 #include <string.h>
 #include <dirent.h>
 #include <signal.h>
-#include <unistd.h>
-#include <sys/wait.h>
 
-#define BUF_SIZE 1024
-
-#define PROG_NAME "shsh"
-#define PROG_FULLNAME "(((ง'ω')و三 ง'ω')ڡ≡ shsh"
-#define PROG_VERSION "0.0.2.9-alpha"
-
-#include "wildcard.c"
+#include "shsh.h"
+#include "builtin.h"
+#include "command.h"
 
 /*
 TODO: ↑ → ↓ ←
@@ -67,155 +61,6 @@ void shsh_exit() {
 	system("stty sane");
 }
 
-char **filenames_wildcard(char *dirname, char *wildcard) {
-	char **filenames = (char **)malloc(sizeof(char *) * BUF_SIZE);;
-	int filenames_i = 0;
-
-	DIR *dir;
-	struct dirent *dp;
-
-	if ((dir = opendir(dirname)) == NULL) {
-		exit(-1);
-	}
-
-	for (dp = readdir(dir); dp != NULL; dp = readdir(dir)) {
-		if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) { // exclude . and ..
-			if (wildcard_match(wildcard, dp->d_name)) {
-				filenames[filenames_i] = (char *)malloc(sizeof(char) * BUF_SIZE);
-				memset(filenames[filenames_i], 0, sizeof(char) * BUF_SIZE);
-				snprintf(filenames[filenames_i], BUF_SIZE, dp->d_name);
-				filenames_i++;
-			}
-		}
-	}
-
-	if (filenames_i == 0) {
-		filenames[0] = wildcard;
-	}
-
-	return filenames;
-}
-
-void builtin_cd(char *arg) {
-	// TODO: WILDCARD
-	// TODO: Add more features
-	char shsh_pwd[BUF_SIZE] = {0};
-	snprintf(shsh_pwd, BUF_SIZE, getenv("PWD"));
-
-	if (strcmp(arg, "..") == 0) {
-		for (int i = strlen(shsh_pwd) - 1; i > 1; i--) {
-			if (shsh_pwd[i] == '/') {
-				shsh_pwd[i] = '\0';
-				break;
-			}
-		}
-	} else {
-		DIR *dir;
-		struct dirent *dp;
-
-		if ((dir = opendir(".")) == NULL) {
-			exit(-1);
-		}
-
-		// WILDCARD
-		char real_name[BUF_SIZE] = {0};
-		for (dp = readdir(dir); dp != NULL; dp = readdir(dir)) {
-			if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) { // exclude . and ..
-				if (wildcard_match(arg, dp->d_name)) {
-					memset(real_name, 0, sizeof(char) * BUF_SIZE);
-					snprintf(real_name, BUF_SIZE, dp->d_name);
-					break;
-				}
-			}
-		}
-
-		if (strlen(real_name) == 0) {
-			printf("No such file or directory\n");
-			return;
-		}
-
-		if (shsh_pwd[strlen(shsh_pwd)-1] != '/') {
-			snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), "/");
-		}
-		snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), real_name);
-	}
-
-	if (chdir(shsh_pwd) == 0) { // Success
-		setenv("PWD", shsh_pwd, 1);
-	} else {
-		printf("Error\n");
-	}
-}
-
-void exec_command(char *command) {
-	// TODO: Search for PATH...done
-	// TODO: Support built-in coumands (cd...done, pwd...done, export, etc.)
-	// TODO: Run ShellScript
-	// TODO: Run program correctly if your own program name conflict with the system program
-	// TODO: WILDCARD
-	char *prog = NULL;
-	char *args[BUF_SIZE] = {NULL};
-
-	if (strlen(command) <= 0) return;
-
-	prog = strtok(command, " ");
-
-	args[0] = prog;
-
-
-	// Built-in commands
-	if (strcmp(prog, "cd") == 0) {
-		// cd command
-		char *arg;
-		if ((arg = strtok(NULL, " ")) != NULL) {
-			builtin_cd(arg);
-		} else {
-			builtin_cd("~");
-		}
-		return;
-	} else if (strcmp(prog, "pwd") == 0) {
-		printf("%s\n", getenv("PWD"));
-		return;
-	}
-
-	for (int i = 1; i < BUF_SIZE && (args[i] = strtok(NULL, " ")) != NULL; i++) {
-		if (args[i][0] != '-' && args[i][0] != '"' && args[i][0] != '\'') {
-			char **filenames = filenames_wildcard(".", args[i]);
-			for (int j = 0; filenames[j] != NULL && i < BUF_SIZE; j++) {
-				args[i] = filenames[j];
-				if (filenames[j+1] != NULL) i++;
-			}
-		}
-	}
-
-	int pid = fork();
-	if (pid == 0) {
-		shsh_exit();
-		signal(SIGINT, SIG_DFL);
-
-		char shsh_path[BUF_SIZE] = {0};
-		snprintf(shsh_path, BUF_SIZE, getenv("PATH"));
-		char *path = strtok(shsh_path, ":");
-		do {
-			char prog_path[BUF_SIZE] = {0};
-			snprintf(prog_path, BUF_SIZE, path);
-			if (prog_path[strlen(prog_path)-1] != '/') { // /hogehoge →  /hogehoge/
-				snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), "/");
-			}
-			snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), prog);
-			// PATH/prog
-			execv(prog_path, args);
-		} while ((path = strtok(NULL, ":")) != NULL);
-		// ./prog
-		execv(prog, args);
-		printf("%s: %s: command not found\n", PROG_NAME, command);
-
-		exit(-1);
-	}
-	waitpid(pid, NULL, 0);
-	shsh_init();
-}
-
 // TODO: Make main function shorter (Split function)
 int main(int argc, char **argv, char **envp) {
 	// Read options
@@ -226,7 +71,7 @@ int main(int argc, char **argv, char **envp) {
 			if (strcmp(&argv[i][1], "c") == 0) {
 				// -c option
 				if (argc > i+1) {
-					exec_command(argv[i+1]);
+					command_exec(argv[i+1]);
 				} else {
 					printf("%s: -c: option requires an argument\n", PROG_NAME);
 					return -1;
@@ -259,16 +104,18 @@ int main(int argc, char **argv, char **envp) {
 	// TODO: Support command history
 	char c;
 	char *command = (char *)malloc(sizeof(char) * BUF_SIZE);
-	char **command_history = (char **)malloc(sizeof(char *) * BUF_SIZE);
+	//char **command_history = (char **)malloc(sizeof(char *) * BUF_SIZE);
 	int cursor_x = 0;
 	// Input mode
 	enum {Insert, Esc, Bracket, Numpad} mode = Insert;
 
 	char shsh_logname[BUF_SIZE] = {0};
 	char shsh_hostname[BUF_SIZE] = {0};
+	char shsh_pwd[BUF_SIZE] = {0};
 
 	snprintf(shsh_logname, BUF_SIZE, getenv("LOGNAME"));
 	snprintf(shsh_hostname, BUF_SIZE, getenv("HOSTNAME"));
+	snprintf(shsh_pwd, BUF_SIZE, getenv("PWD"));
 
 	signal(SIGINT, SIG_IGN);
 
@@ -288,9 +135,13 @@ int main(int argc, char **argv, char **envp) {
 			} else if (c == 10) { // Enter
 				printf("\n");
 
-				exec_command(command);
+				command_exec(command);
 
 				memset(command, 0, sizeof(char) * BUF_SIZE);
+				memset(shsh_pwd, 0, sizeof(char) * BUF_SIZE);
+
+				snprintf(shsh_pwd, BUF_SIZE, getenv("PWD"));
+
 				printf("<%s@%s> $ ", shsh_logname, strtok(shsh_hostname, "."));
 				mode = Insert;
 				cursor_x = 0;
