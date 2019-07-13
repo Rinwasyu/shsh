@@ -82,6 +82,9 @@ void command_exec(char *shsh_command) {
 		char shsh_path[BUF_SIZE] = {0};
 		snprintf(shsh_path, BUF_SIZE, getenv("PATH"));
 		char *path = strtok(shsh_path, ":");
+
+		signal(SIGINT, SIG_DFL);
+
 		do {
 			char prog_path[BUF_SIZE] = {0};
 			snprintf(prog_path, BUF_SIZE, path);
@@ -98,5 +101,6 @@ void command_exec(char *shsh_command) {
 
 		exit(-1);
 	}
+	signal(SIGINT, SIG_IGN);
 	waitpid(pid, NULL, 0);
 }
