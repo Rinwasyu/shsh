@@ -29,15 +29,18 @@
 #include "command.h"
 #include "filenames.h"
 
-void command_exec(char *command) {
+void command_exec(char *shsh_command) {
 	// TODO: Search for PATH...done
 	// TODO: Support built-in coumands (cd...done, pwd...done, export, etc.)
 	// TODO: Run ShellScript
 	// TODO: Run program correctly if your own program name conflict with the system program
 	// TODO: WILDCARD
 	// TODO: Job control
+	char command[BUF_SIZE] = {0};
 	char *prog = NULL;
 	char *args[BUF_SIZE] = {NULL};
+
+	snprintf(command, BUF_SIZE, shsh_command);
 
 	if (strlen(command) <= 0) return;
 

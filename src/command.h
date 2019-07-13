@@ -21,6 +21,6 @@
 #ifndef SHSH_COMMAND_H
 #define SHSH_COMMAND_H
 
-void command_exec(char *command);
+void command_exec(char *shsh_command);
 
 #endif

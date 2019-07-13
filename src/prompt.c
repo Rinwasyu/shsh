@@ -17,12 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
- 
+
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
  #include <signal.h>
- 
+
  #include "shsh.h"
  #include "command.h"
  #include "prompt.h"
@@ -48,7 +48,7 @@ void prompt_print() {
 	snprintf(shsh_logname, BUF_SIZE, getenv("LOGNAME"));
 	snprintf(shsh_hostname, BUF_SIZE, getenv("HOSTNAME"));
 	snprintf(shsh_pwd, BUF_SIZE, getenv("PWD"));
-	
+
 	printf("<%s@%s> %s ", shsh_logname, strtok(shsh_hostname, "."), strcmp(shsh_logname, "root") == 0 ? "#":"$");
 }
 
@@ -56,11 +56,13 @@ void prompt_loop() {
 	// TODO: Support command history
 	char c;
 	char *command = (char *)malloc(sizeof(char) * BUF_SIZE);
-	//char **command_history = (char **)malloc(sizeof(char *) * BUF_SIZE);
+	char **command_history = (char **)malloc(sizeof(char *) * BUF_SIZE);
+	int history_n = 0;
+	int history_i = 0;
 	int cursor_x = 0;
 	// Input mode
 	enum {Insert, Esc, Bracket, Numpad} mode = Insert;
-	
+
 	prompt_print();
 	while (1) {
 		// DEBUG
@@ -70,7 +72,7 @@ void prompt_loop() {
 			shsh_exit();
 			break;
 		}
-		
+
 		if (mode == Insert) {
 			if (c == 4) { // Ctrl-D
 				printf("exit");
@@ -83,10 +85,17 @@ void prompt_loop() {
 				command_exec(command);
 				prompt_init();
 
+				if (history_n == 0 || (strcmp(command_history[history_n-1], command) != 0 && strlen(command) > 0)) {
+					command_history[history_n] = (char *)malloc(sizeof(char) * BUF_SIZE);
+					snprintf(command_history[history_n], BUF_SIZE, command);
+					history_n++;
+				}
+				history_i = history_n;
+
 				memset(command, 0, sizeof(char) * BUF_SIZE);
-				
+
 				prompt_print();
-				
+
 				mode = Insert;
 				cursor_x = 0;
 			} else if (c == 27) {
@@ -133,9 +142,33 @@ void prompt_loop() {
 		} else if (mode == Bracket) {
 			if (c == 49 || c == 52) {
 				mode = Numpad;
-			} else if (c == 65) {
+			} else if (c == 65) { // Up↑
+				if (history_i > 0) {
+					for (; cursor_x > 0; cursor_x--) {
+						printf("\b \b");
+					}
+					memset(command, 0, sizeof(char) * BUF_SIZE);
+					history_i--;
+					snprintf(command, BUF_SIZE, command_history[history_i]);
+					for (int i = 0; i < strlen(command); i++) {
+						printf("%c", command[i]);
+						cursor_x++;
+					}
+				}
 				mode = Insert;
-			} else if (c == 66) {
+			} else if (c == 66) { // Down↓
+				if (history_i < history_n) {
+					for (; cursor_x > 0; cursor_x--) {
+						printf("\b \b");
+					}
+					memset(command, 0, sizeof(char) * BUF_SIZE);
+					history_i++;
+					snprintf(command, BUF_SIZE, command_history[history_i]);
+					for (int i = 0; i < strlen(command); i++) {
+						printf("%c", command[i]);
+						cursor_x++;
+					}
+				}
 				mode = Insert;
 			} else if (c == 67) { // RIGHT→
 				if (cursor_x < strlen(command)) {
