@@ -40,7 +40,7 @@ void command_exec(char *shsh_command) {
 	char *prog = NULL;
 	char *args[BUF_SIZE] = {NULL};
 
-	snprintf(command, BUF_SIZE, shsh_command);
+	snprintf(command, BUF_SIZE, "%s", shsh_command);
 
 	if (strlen(command) <= 0) return;
 
@@ -80,18 +80,18 @@ void command_exec(char *shsh_command) {
 	int pid = fork();
 	if (pid == 0) {
 		char shsh_path[BUF_SIZE] = {0};
-		snprintf(shsh_path, BUF_SIZE, getenv("PATH"));
+		snprintf(shsh_path, BUF_SIZE, "%s", getenv("PATH"));
 		char *path = strtok(shsh_path, ":");
 
 		signal(SIGINT, SIG_DFL);
 
 		do {
 			char prog_path[BUF_SIZE] = {0};
-			snprintf(prog_path, BUF_SIZE, path);
+			snprintf(prog_path, BUF_SIZE, "%s", path);
 			if (prog_path[strlen(prog_path)-1] != '/') { // /hogehoge →  /hogehoge/
 				snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), "/");
 			}
-			snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), prog);
+			snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), "%s", prog);
 			// PATH/prog
 			execv(prog_path, args);
 		} while ((path = strtok(NULL, ":")) != NULL);

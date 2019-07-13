@@ -31,7 +31,7 @@ void builtin_cd(char *arg) {
 	// TODO: WILDCARD
 	// TODO: Add more features
 	char shsh_pwd[BUF_SIZE] = {0};
-	snprintf(shsh_pwd, BUF_SIZE, getenv("PWD"));
+	snprintf(shsh_pwd, BUF_SIZE, "%s", getenv("PWD"));
 
 	if (strcmp(arg, "..") == 0) {
 		for (int i = strlen(shsh_pwd) - 1; i > 1; i--) {
@@ -42,12 +42,12 @@ void builtin_cd(char *arg) {
 		}
 	} else {
 		char dir_name[BUF_SIZE] = {0};
-		snprintf(dir_name, BUF_SIZE, filenames_wildcard(".", arg)[0]);
+		snprintf(dir_name, BUF_SIZE, "%s", filenames_wildcard(".", arg)[0]);
 
 		if (shsh_pwd[strlen(shsh_pwd)-1] != '/') {
 			snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), "/");
 		}
-		snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), dir_name);
+		snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), "%s", dir_name);
 	}
 
 	if (chdir(shsh_pwd) == 0) { // Success

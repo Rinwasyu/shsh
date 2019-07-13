@@ -42,7 +42,7 @@ char **filenames_wildcard(char *dirname, char *wildcard) {
 			if (wildcard_match(wildcard, dp->d_name)) {
 				filenames[filenames_i] = (char *)malloc(sizeof(char) * BUF_SIZE);
 				memset(filenames[filenames_i], 0, sizeof(char) * BUF_SIZE);
-				snprintf(filenames[filenames_i], BUF_SIZE, dp->d_name);
+				snprintf(filenames[filenames_i], BUF_SIZE, "%s", dp->d_name);
 				filenames_i++;
 			}
 		}

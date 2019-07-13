@@ -49,7 +49,7 @@ void shsh_exit() {
 }
 
 // TODO: Make main function shorter (Split function)...done
-int main(int argc, char **argv, char **envp) {
+int main(int argc, char **argv) {
 	option_readOptions(argc, argv);
 
 	shsh_init();

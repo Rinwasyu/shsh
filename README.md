@@ -8,8 +8,21 @@
 A shell.  
 
 ## Build
+### GCC
 ```Shell
 cd src
+make
+```
+
+### Other compilers
+```Shell
+cd src
+make CC=command
+```
+
+### Rebuild ALL
+```Shell
+make clean
 make
 ```
 

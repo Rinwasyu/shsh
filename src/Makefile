@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 CC := gcc
-CFLAGS := -Wall -O3
+CFLAGS := -Wall -Wextra -O3
 
 all: shsh
 
@@ -30,4 +30,4 @@ prompt.o: prompt.c
 	$(CC) $(CFLAGS) -c $^
 
 clean:
-	rm -f *.o
+	rm -f *.o shsh

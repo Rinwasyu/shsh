@@ -45,9 +45,9 @@ void prompt_print() {
 	char shsh_hostname[BUF_SIZE] = {0};
 	char shsh_pwd[BUF_SIZE] = {0};
 
-	snprintf(shsh_logname, BUF_SIZE, getenv("LOGNAME"));
-	snprintf(shsh_hostname, BUF_SIZE, getenv("HOSTNAME"));
-	snprintf(shsh_pwd, BUF_SIZE, getenv("PWD"));
+	snprintf(shsh_logname, BUF_SIZE, "%s", getenv("LOGNAME"));
+	snprintf(shsh_hostname, BUF_SIZE, "%s", getenv("HOSTNAME"));
+	snprintf(shsh_pwd, BUF_SIZE, "%s", getenv("PWD"));
 
 	printf("<%s@%s> %s ", shsh_logname, strtok(shsh_hostname, "."), strcmp(shsh_logname, "root") == 0 ? "#":"$");
 }
@@ -88,9 +88,9 @@ void prompt_loop() {
 				command_exec(command);
 				prompt_init();
 
-				if (history_n == 0 || (strcmp(command_history[(BUF_SIZE + history_e-1) % BUF_SIZE], command) != 0 && strlen(command) > 0)) {
+				if (history_n == 0 || (strcmp(command_history[(BUF_SIZE + history_e-1) % BUF_SIZE], command) != 0 && (int)strlen(command) > 0)) {
 					command_history[history_e] = (char *)malloc(sizeof(char) * BUF_SIZE);
-					snprintf(command_history[history_e], BUF_SIZE, command);
+					snprintf(command_history[history_e], BUF_SIZE, "%s", command);
 					history_e = (history_e + 1) % BUF_SIZE;
 					if (history_b == history_e)
 						history_b = (history_b + 1) % BUF_SIZE;
@@ -109,8 +109,8 @@ void prompt_loop() {
 				mode = Esc;
 			} else if (c == 127) {
 				// Backspace
-				if (strlen(command) > 0 && cursor_x > 0) {
-					int s_len = strlen(command);
+				if ((int)strlen(command) > 0 && cursor_x > 0) {
+					int s_len = (int)strlen(command);
 					cursor_x--;
 					printf("\b");
 					for (int i = cursor_x; i < s_len; i++) {
@@ -122,20 +122,20 @@ void prompt_loop() {
 				}
 			} else {
 				// input
-				if (strlen(command) < BUF_SIZE - 1) {
-					for (int i = cursor_x; i < strlen(command); i++)
+				if ((int)strlen(command) < BUF_SIZE - 1) {
+					for (int i = cursor_x; i < (int)strlen(command); i++)
 						printf(" ");
-					for (int i = cursor_x; i < strlen(command); i++)
+					for (int i = cursor_x; i < (int)strlen(command); i++)
 						printf("\b");
 
-					for (int i = cursor_x, ch = c; i < strlen(command) + 1; i++) {
+					for (int i = cursor_x, ch = c; i < (int)strlen(command) + 1; i++) {
 						char swap = command[i];
 						printf("%c", ch);
 						command[i] = ch;
 						ch = swap;
 					}
 
-					for (int i = 0; i < strlen(command) - cursor_x - 1; i++)
+					for (int i = 0; i < (int)strlen(command) - cursor_x - 1; i++)
 						printf("\b");
 					cursor_x++;
 				}
@@ -151,7 +151,7 @@ void prompt_loop() {
 				mode = Numpad;
 			} else if (c == 65) { // Up↑
 				if (history_i > 0) {
-					for (; cursor_x < strlen(command); cursor_x++) {
+					for (; cursor_x < (int)strlen(command); cursor_x++) {
 						printf(" ");
 					}
 					for (; cursor_x > 0; cursor_x--) {
@@ -159,8 +159,8 @@ void prompt_loop() {
 					}
 					memset(command, 0, sizeof(char) * BUF_SIZE);
 					history_i--;
-					snprintf(command, BUF_SIZE, command_history[(history_b + history_i) % BUF_SIZE]);
-					for (int i = 0; i < strlen(command); i++) {
+					snprintf(command, BUF_SIZE, "%s", command_history[(history_b + history_i) % BUF_SIZE]);
+					for (int i = 0; i < (int)strlen(command); i++) {
 						printf("%c", command[i]);
 						cursor_x++;
 					}
@@ -168,7 +168,7 @@ void prompt_loop() {
 				mode = Insert;
 			} else if (c == 66) { // Down↓
 				if (history_i < history_n) {
-					for (; cursor_x < strlen(command); cursor_x++) {
+					for (; cursor_x < (int)strlen(command); cursor_x++) {
 						printf(" ");
 					}
 					for (; cursor_x > 0; cursor_x--) {
@@ -176,15 +176,17 @@ void prompt_loop() {
 					}
 					memset(command, 0, sizeof(char) * BUF_SIZE);
 					history_i++;
-					snprintf(command, BUF_SIZE, command_history[(history_b + history_i) % BUF_SIZE]);
-					for (int i = 0; i < strlen(command); i++) {
+					if (history_i < history_n) {
+						snprintf(command, BUF_SIZE, "%s", command_history[(history_b + history_i) % BUF_SIZE]);
+					}
+					for (int i = 0; i < (int)strlen(command); i++) {
 						printf("%c", command[i]);
 						cursor_x++;
 					}
 				}
 				mode = Insert;
 			} else if (c == 67) { // RIGHT→
-				if (cursor_x < strlen(command)) {
+				if (cursor_x < (int)strlen(command)) {
 					printf("\e[1C");
 					cursor_x++;
 				}
