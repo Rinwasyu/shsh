@@ -17,46 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+ 
+ #ifndef SHSH_OPTIN_H
+ #define SHSH_OPTIN_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dirent.h>
-#include <signal.h>
+void option_readOptions(int argc, char **argv);
+void option_help();
+void option_version();
 
-#include "shsh.h"
-#include "builtin.h"
-#include "command.h"
-#include "option.h"
-#include "prompt.h"
-
-/*
-TODO: ↑ → ↓ ←
-TODO: input
-TODO: TAB
-TODO: Awesome error messages
-TODO: Split file (priority : VERY_HIGH) ...done
-TODO: Run script file
-TODO: REFACTOR
-*/
-
-void shsh_init() {
-	prompt_init();
-}
-
-void shsh_exit() {
-	prompt_exit();
-}
-
-// TODO: Make main function shorter (Split function)...done
-int main(int argc, char **argv, char **envp) {
-	option_readOptions(argc, argv);
-
-	shsh_init();
-	prompt_loop();
-	shsh_exit();
-
-	// See you!
-	printf("\n");
-	return 0;
-}
+#endif

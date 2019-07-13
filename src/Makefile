@@ -5,7 +5,7 @@ CFLAGS := -Wall -O3
 
 all: shsh
 
-shsh: shsh.o wildcard.o builtin.o command.o filenames.o
+shsh: shsh.o wildcard.o builtin.o command.o filenames.o option.o prompt.o
 	$(CC) -o $@ $^
 
 shsh.o: shsh.c
@@ -23,5 +23,11 @@ command.o: command.c
 filenames.o: filenames.c
 	$(CC) $(CFLAGS) -c $^
 
+option.o: option.c
+	$(CC) $(CFLAGS) -c $^
+
+prompt.o: prompt.c
+	$(CC) $(CFLAGS) -c $^
+
 clean:
-	rm -f shsh *.o
+	rm -f *.o

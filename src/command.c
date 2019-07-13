@@ -35,6 +35,7 @@ void command_exec(char *command) {
 	// TODO: Run ShellScript
 	// TODO: Run program correctly if your own program name conflict with the system program
 	// TODO: WILDCARD
+	// TODO: Job control
 	char *prog = NULL;
 	char *args[BUF_SIZE] = {NULL};
 
@@ -72,9 +73,6 @@ void command_exec(char *command) {
 
 	int pid = fork();
 	if (pid == 0) {
-		shsh_exit();
-		signal(SIGINT, SIG_DFL);
-
 		char shsh_path[BUF_SIZE] = {0};
 		snprintf(shsh_path, BUF_SIZE, getenv("PATH"));
 		char *path = strtok(shsh_path, ":");
@@ -95,5 +93,4 @@ void command_exec(char *command) {
 		exit(-1);
 	}
 	waitpid(pid, NULL, 0);
-	shsh_init();
 }

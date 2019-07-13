@@ -18,45 +18,12 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dirent.h>
-#include <signal.h>
+#ifndef SHSH_PROMPT_H
+#define SHSH_PROMPT_H
 
-#include "shsh.h"
-#include "builtin.h"
-#include "command.h"
-#include "option.h"
-#include "prompt.h"
+void prompt_init();
+void prompt_exit();
+void prompt_print();
+void prompt_loop();
 
-/*
-TODO: ↑ → ↓ ←
-TODO: input
-TODO: TAB
-TODO: Awesome error messages
-TODO: Split file (priority : VERY_HIGH) ...done
-TODO: Run script file
-TODO: REFACTOR
-*/
-
-void shsh_init() {
-	prompt_init();
-}
-
-void shsh_exit() {
-	prompt_exit();
-}
-
-// TODO: Make main function shorter (Split function)...done
-int main(int argc, char **argv, char **envp) {
-	option_readOptions(argc, argv);
-
-	shsh_init();
-	prompt_loop();
-	shsh_exit();
-
-	// See you!
-	printf("\n");
-	return 0;
-}
+#endif

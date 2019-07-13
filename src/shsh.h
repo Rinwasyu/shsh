@@ -25,14 +25,9 @@
 
 #define PROG_NAME "shsh"
 #define PROG_FULLNAME "(((ง'ω')و三 ง'ω')ڡ≡ shsh"
-#define PROG_VERSION "0.0.3.0-alpha"
-
-void print_version();
-void print_help();
+#define PROG_VERSION "0.0.3.1-alpha"
 
 void shsh_init();
 void shsh_exit();
-
-char **filenames_wildcard(char *dirname, char *wildcard);
 
 #endif
