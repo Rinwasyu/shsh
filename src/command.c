@@ -62,6 +62,9 @@ void command_exec(char *shsh_command) {
 	} else if (strcmp(prog, "pwd") == 0) {
 		builtin_pwd();
 		return;
+	} else if (strcmp(prog, "help") == 0) {
+		builtin_help();
+		return;
 	}
 
 	for (int i = 1; i < BUF_SIZE && (args[i] = strtok(NULL, " ")) != NULL; i++) {

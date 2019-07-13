@@ -23,5 +23,6 @@
 
 void builtin_cd(char *arg);
 void builtin_pwd();
+void builtin_help();
 
 #endif

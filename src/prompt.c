@@ -53,10 +53,13 @@ void prompt_print() {
 }
 
 void prompt_loop() {
-	// TODO: Support command history
+	// TODO: Support command history...done
+	// TODO: REFACTOR
 	char c;
 	char *command = (char *)malloc(sizeof(char) * BUF_SIZE);
 	char **command_history = (char **)malloc(sizeof(char *) * BUF_SIZE);
+	int history_b = 0;
+	int history_e = 0;
 	int history_n = 0;
 	int history_i = 0;
 	int cursor_x = 0;
@@ -65,13 +68,13 @@ void prompt_loop() {
 
 	prompt_print();
 	while (1) {
-		// DEBUG
-		//printf("keycode : %d\n", c);
 		// TODO: here
 		if ((c = getchar()) == EOF) {
 			shsh_exit();
 			break;
 		}
+		// DEBUG
+		//printf("keycode : %d\n", c);
 
 		if (mode == Insert) {
 			if (c == 4) { // Ctrl-D
@@ -85,10 +88,14 @@ void prompt_loop() {
 				command_exec(command);
 				prompt_init();
 
-				if (history_n == 0 || (strcmp(command_history[history_n-1], command) != 0 && strlen(command) > 0)) {
-					command_history[history_n] = (char *)malloc(sizeof(char) * BUF_SIZE);
-					snprintf(command_history[history_n], BUF_SIZE, command);
-					history_n++;
+				if (history_n == 0 || (strcmp(command_history[(BUF_SIZE + history_e-1) % BUF_SIZE], command) != 0 && strlen(command) > 0)) {
+					command_history[history_e] = (char *)malloc(sizeof(char) * BUF_SIZE);
+					snprintf(command_history[history_e], BUF_SIZE, command);
+					history_e = (history_e + 1) % BUF_SIZE;
+					if (history_b == history_e)
+						history_b = (history_b + 1) % BUF_SIZE;
+					if (history_n < BUF_SIZE)
+						history_n++;
 				}
 				history_i = history_n;
 
@@ -144,12 +151,15 @@ void prompt_loop() {
 				mode = Numpad;
 			} else if (c == 65) { // Up↑
 				if (history_i > 0) {
+					for (; cursor_x < strlen(command); cursor_x++) {
+						printf(" ");
+					}
 					for (; cursor_x > 0; cursor_x--) {
 						printf("\b \b");
 					}
 					memset(command, 0, sizeof(char) * BUF_SIZE);
 					history_i--;
-					snprintf(command, BUF_SIZE, command_history[history_i]);
+					snprintf(command, BUF_SIZE, command_history[(history_b + history_i) % BUF_SIZE]);
 					for (int i = 0; i < strlen(command); i++) {
 						printf("%c", command[i]);
 						cursor_x++;
@@ -158,12 +168,15 @@ void prompt_loop() {
 				mode = Insert;
 			} else if (c == 66) { // Down↓
 				if (history_i < history_n) {
+					for (; cursor_x < strlen(command); cursor_x++) {
+						printf(" ");
+					}
 					for (; cursor_x > 0; cursor_x--) {
 						printf("\b \b");
 					}
 					memset(command, 0, sizeof(char) * BUF_SIZE);
 					history_i++;
-					snprintf(command, BUF_SIZE, command_history[history_i]);
+					snprintf(command, BUF_SIZE, command_history[(history_b + history_i) % BUF_SIZE]);
 					for (int i = 0; i < strlen(command); i++) {
 						printf("%c", command[i]);
 						cursor_x++;

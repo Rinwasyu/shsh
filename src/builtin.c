@@ -60,3 +60,8 @@ void builtin_cd(char *arg) {
 void builtin_pwd() {
 	printf("%s\n", getenv("PWD"));
 }
+
+void builtin_help() {
+	printf("builtin commands:");
+	printf("cd, pwd, help(this)\n");
+}
