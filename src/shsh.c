@@ -38,6 +38,7 @@ TODO: Awesome error messages
 TODO: Split file (priority : VERY_HIGH) ...done
 TODO: Run script file
 TODO: REFACTOR
+TODO: Use global variables
 */
 
 void shsh_init() {
@@ -48,7 +49,6 @@ void shsh_exit() {
 	prompt_exit();
 }
 
-// TODO: Make main function shorter (Split function)...done
 int main(int argc, char **argv) {
 	option_readOptions(argc, argv);
 

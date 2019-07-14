@@ -30,8 +30,7 @@
 #include "filenames.h"
 
 void command_exec(char *shsh_command) {
-	// TODO: Search for PATH...done
-	// TODO: Support built-in coumands (cd...done, pwd...done, export, etc.)
+	// TODO: Support built-in coumands (cd...done, pwd...done, help...done, export, etc.)
 	// TODO: Run ShellScript
 	// TODO: Run program correctly if your own program name conflict with the system program
 	// TODO: WILDCARD
@@ -44,14 +43,13 @@ void command_exec(char *shsh_command) {
 
 	if (strlen(command) <= 0) return;
 
-	prog = strtok(command, " ");
+	if ((prog = strtok(command, " ")) == NULL) return;
 
 	args[0] = prog;
 
 
 	// Built-in commands
 	if (strcmp(prog, "cd") == 0) {
-		// cd command
 		char *arg;
 		if ((arg = strtok(NULL, " ")) != NULL) {
 			builtin_cd(arg);

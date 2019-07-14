@@ -27,7 +27,6 @@
 #include "option.h"
 
 void option_readOptions(int argc, char **argv) {
-	// Read options
 	// TODO: Support other options
 	// TODO: Support -abc...
 	for (int i = 1; i < argc; i++) {
