@@ -31,9 +31,14 @@ void builtin_cd(char *arg) {
 	// TODO: WILDCARD
 	// TODO: Add more features
 	char shsh_pwd[BUF_SIZE] = {0};
-	snprintf(shsh_pwd, BUF_SIZE, "%s", getenv("PWD"));
 
-	if (strcmp(arg, "..") == 0) {
+	if (arg[0] != '/') {
+		snprintf(shsh_pwd, BUF_SIZE, "%s", getenv("PWD"));
+	}
+
+	if (arg[0] == '/') {
+		snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), "%s", arg);
+	} else if (strcmp(arg, "..") == 0) {
 		for (int i = strlen(shsh_pwd) - 1; i > 1; i--) {
 			if (shsh_pwd[i] == '/') {
 				shsh_pwd[i] = '\0';
