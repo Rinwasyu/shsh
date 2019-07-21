@@ -39,9 +39,12 @@ void builtin_cd(char *arg) {
 	if (arg[0] == '/') {
 		snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), "%s", arg);
 	} else if (strcmp(arg, "..") == 0) {
-		for (int i = strlen(shsh_pwd) - 1; i > 1; i--) {
-			if (shsh_pwd[i] == '/') {
+		for (int i = strlen(shsh_pwd) - 1; i > 0; i--) {
+			if (shsh_pwd[i] != '/') {
 				shsh_pwd[i] = '\0';
+			} else {
+				if (strlen(shsh_pwd) > 1)
+					shsh_pwd[i] = '\0';
 				break;
 			}
 		}
@@ -69,4 +72,8 @@ void builtin_pwd() {
 void builtin_help() {
 	printf("builtin commands:");
 	printf("cd, pwd, help(this)\n");
+}
+
+void builtin_exit() {
+	exit(0);
 }

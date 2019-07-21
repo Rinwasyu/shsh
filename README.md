@@ -20,7 +20,7 @@ cd src
 make CC=command
 ```
 
-### Rebuild ALL
+### Rebuild
 ```Shell
 make clean
 make

@@ -70,6 +70,9 @@ void command_exec(char *shsh_command) {
 	} else if (strcmp(prog, "help") == 0) {
 		builtin_help();
 		return;
+	} else if (strcmp(prog, "exit") == 0) {
+		builtin_exit();
+		return;
 	}
 
 	// args
