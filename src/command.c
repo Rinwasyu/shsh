@@ -54,8 +54,11 @@ void command_exec(char *shsh_command) {
 
 	// Built-in commands
 	if (strcmp(prog, "cd") == 0) {
-		char *arg;
-		if ((arg = strtok(NULL, " ")) != NULL) {
+		char arg[BUF_SIZE] = {0};
+		for (command_i++; command[command_i] != ' ' && command_i < (int)strlen(command); command_i++) {
+			arg[strlen(arg)] = command[command_i];
+		}
+		if (strlen(arg) > 0) {
 			builtin_cd(arg);
 		} else {
 			builtin_cd("~");
