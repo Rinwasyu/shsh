@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
- 
+
  #ifndef SHSH_OPTIN_H
  #define SHSH_OPTIN_H
 

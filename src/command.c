@@ -35,15 +35,19 @@ void command_exec(char *shsh_command) {
 	// TODO: Run program correctly if your own program name conflict with the system program
 	// TODO: WILDCARD
 	// TODO: Job control
+	// TODO: Support "" and '' in options...done
 	char command[BUF_SIZE] = {0};
-	char *prog = NULL;
+	char prog[BUF_SIZE] = {0};
 	char *args[BUF_SIZE] = {NULL};
 
 	snprintf(command, BUF_SIZE, "%s", shsh_command);
 
 	if (strlen(command) <= 0) return;
 
-	if ((prog = strtok(command, " ")) == NULL) return;
+	int command_i = 0;
+	for (int i = 0; command_i < (int)strlen(command) && command[command_i] != ' '; i++, command_i++) {
+		prog[i] = command[command_i];
+	}
 
 	args[0] = prog;
 
@@ -65,11 +69,35 @@ void command_exec(char *shsh_command) {
 		return;
 	}
 
-	for (int i = 1; i < BUF_SIZE && (args[i] = strtok(NULL, " ")) != NULL; i++) {
-		if (args[i][0] != '-' && args[i][0] != '"' && args[i][0] != '\'') {
-			char **filenames = filenames_wildcard(".", args[i]);
+	// args
+	for (int i = 1; i < BUF_SIZE && command_i < (int)strlen(command); i++, command_i++) {
+		char arg[BUF_SIZE] = {0};
+		for (; command[command_i] == ' ' && command_i < (int)strlen(command); command_i++); // Skip
+		if (command[command_i] == '"' || command[command_i] == '\'' || command[command_i] == '`') {
+			char q_mark = command[command_i];
+			for (command_i++; command[command_i] != q_mark && command_i < (int)strlen(command); command_i++) {
+				if (command[command_i] == '\\') {
+					if (command_i+1 < (int)strlen(command)) {
+						if (command[command_i+1] == '\'' || command[command_i+1] == '"')
+							command_i++;
+					} else {
+						printf("Error\n");
+					}
+				}
+				arg[strlen(arg)] = command[command_i];
+			}
+			args[i] = (char *)malloc(sizeof(char) * BUF_SIZE);
+			memset(args[i], 0, sizeof(char) * BUF_SIZE);
+			snprintf(args[i], BUF_SIZE, "%s", arg);
+		} else {
+			for (; command[command_i] != ' ' && command_i < (int)strlen(command); command_i++) {
+				arg[strlen(arg)] = command[command_i];
+			}
+			char **filenames = filenames_wildcard(".", arg);
 			for (int j = 0; filenames[j] != NULL && i < BUF_SIZE; j++) {
-				args[i] = filenames[j];
+				args[i] = (char *)malloc(sizeof(char) * BUF_SIZE);
+				memset(args[i], 0, sizeof(char) * BUF_SIZE);
+				snprintf(args[i], BUF_SIZE, "%s", filenames[j]);
 				if (filenames[j+1] != NULL) i++;
 			}
 		}
