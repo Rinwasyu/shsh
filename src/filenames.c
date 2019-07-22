@@ -18,13 +18,13 @@
  *
  */
 
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
- #include <dirent.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
 
- #include "shsh.h"
- #include "wildcard.h"
+#include "shsh.h"
+#include "wildcard.h"
 
 char **filenames_wildcard(char *dirname, char *wildcard) {
 	char **filenames = (char **)malloc(sizeof(char *) * BUF_SIZE);;

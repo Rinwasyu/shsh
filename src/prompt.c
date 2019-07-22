@@ -18,14 +18,15 @@
  *
  */
 
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
- #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <signal.h>
 
- #include "shsh.h"
- #include "command.h"
- #include "prompt.h"
+#include "shsh.h"
+#include "command.h"
+#include "prompt.h"
 
 void prompt_init() {
 	system("stty stop undef");
@@ -45,8 +46,18 @@ void prompt_print() {
 	char shsh_hostname[BUF_SIZE] = {0};
 	char shsh_pwd[BUF_SIZE] = {0};
 
-	snprintf(shsh_logname, BUF_SIZE, "%s", getenv("LOGNAME"));
-	snprintf(shsh_hostname, BUF_SIZE, "%s", getenv("HOSTNAME"));
+	if (getenv("LOGNAME") != NULL) {
+		snprintf(shsh_logname, BUF_SIZE, "%s", getenv("LOGNAME"));
+	} else {
+		getlogin_r(shsh_logname, sizeof(shsh_logname));
+	}
+
+	if (getenv("HOSTNAME") != NULL) {
+		snprintf(shsh_hostname, BUF_SIZE, "%s", getenv("HOSTNAME"));
+	} else {
+		gethostname(shsh_hostname, sizeof(shsh_hostname));
+	}
+
 	snprintf(shsh_pwd, BUF_SIZE, "%s", getenv("PWD"));
 
 	printf("<%s@%s> %s ", shsh_logname, strtok(shsh_hostname, "."), strcmp(shsh_logname, "root") == 0 ? "#":"$");
