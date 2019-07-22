@@ -218,7 +218,16 @@ void prompt_loop() {
 					printf("\e[1D");
 				}
 				mode = Insert;
-			} else if (c == 126) {
+			} else if (c == 126) { // Delete
+				if ((int)strlen(command) > 0 && cursor_x < strlen(command)) {
+					int s_len = (int)strlen(command);
+					for (int i = cursor_x; i < s_len; i++) {
+						command[i] = command[i + 1];
+						printf("%c", command[i] ? command[i] : ' ');
+					}
+					for (int i = cursor_x; i < s_len; i++)
+						printf("\b");
+				}
 				mode = Insert;
 			}
 		} else if (mode == Numpad) {

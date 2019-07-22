@@ -36,6 +36,8 @@ void command_exec(char *shsh_command) {
 	// TODO: WILDCARD
 	// TODO: Job control
 	// TODO: Support "" and '' in options...done
+	// TODO: Support pipe
+	// TODO: Support redirect
 	char command[BUF_SIZE] = {0};
 	char prog[BUF_SIZE] = {0};
 	char *args[BUF_SIZE] = {NULL};

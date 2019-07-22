@@ -70,7 +70,7 @@ void builtin_pwd() {
 }
 
 void builtin_help() {
-	printf("builtin commands:");
+	printf("builtin commands :\n");
 	printf("cd, pwd, help(this)\n");
 }
 
