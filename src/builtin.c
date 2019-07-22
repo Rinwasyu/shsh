@@ -26,6 +26,7 @@
 #include "shsh.h"
 #include "wildcard.h"
 #include "filenames.h"
+#include "builtin.h"
 
 void builtin_cd(char *arg) {
 	// TODO: WILDCARD
@@ -42,7 +43,7 @@ void builtin_cd(char *arg) {
 		memset(shsh_pwd, 0, sizeof(char) * BUF_SIZE);
 		snprintf(shsh_pwd, BUF_SIZE, "%s", getenv("HOME"));
 	} else if (strcmp(arg, "..") == 0) {
-		for (int i = strlen(shsh_pwd) - 1; i > 0; i--) {
+		for (int i = (int)strlen(shsh_pwd) - 1; i > 0; i--) {
 			if (shsh_pwd[i] != '/') {
 				shsh_pwd[i] = '\0';
 			} else {
@@ -77,6 +78,6 @@ void builtin_help() {
 	printf("cd, pwd, help(this)\n");
 }
 
-void builtin_exit() {
+int builtin_exit() {
 	exit(0);
 }

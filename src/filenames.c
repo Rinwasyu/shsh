@@ -25,6 +25,7 @@
 
 #include "shsh.h"
 #include "wildcard.h"
+#include "filenames.h"
 
 char **filenames_wildcard(char *dirname, char *wildcard) {
 	char **filenames = (char **)malloc(sizeof(char *) * BUF_SIZE);;

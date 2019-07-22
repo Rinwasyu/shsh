@@ -21,9 +21,9 @@
 #ifndef SHSH_PROMPT_H
 #define SHSH_PROMPT_H
 
-void prompt_init();
-void prompt_exit();
-void prompt_print();
-void prompt_loop();
+void prompt_init(void);
+void prompt_exit(void);
+void prompt_print(void);
+void prompt_loop(void);
 
 #endif

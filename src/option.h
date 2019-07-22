@@ -22,7 +22,7 @@
  #define SHSH_OPTIN_H
 
 void option_readOptions(int argc, char **argv);
-void option_help();
-void option_version();
+void option_help(void);
+void option_version(void);
 
 #endif

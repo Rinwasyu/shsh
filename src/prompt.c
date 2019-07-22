@@ -66,7 +66,7 @@ void prompt_print() {
 void prompt_loop() {
 	// TODO: Support command history...done
 	// TODO: REFACTOR
-	char c;
+	int c;
 	char *command = (char *)malloc(sizeof(char) * BUF_SIZE);
 	char **command_history = (char **)malloc(sizeof(char *) * BUF_SIZE);
 	int history_b = 0;
@@ -141,8 +141,8 @@ void prompt_loop() {
 
 					for (int i = cursor_x, ch = c; i < (int)strlen(command) + 1; i++) {
 						char swap = command[i];
-						printf("%c", ch);
-						command[i] = ch;
+						printf("%c", (char)ch);
+						command[i] = (char)ch;
 						ch = swap;
 					}
 

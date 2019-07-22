@@ -22,8 +22,8 @@
 #define SHSH_BUILTIN_H
 
 void builtin_cd(char *arg);
-void builtin_pwd();
-void builtin_help();
-void builtin_exit();
+void builtin_pwd(void);
+void builtin_help(void);
+int builtin_exit(void);
 
 #endif
