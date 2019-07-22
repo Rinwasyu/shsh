@@ -35,7 +35,7 @@ void command_exec(char *shsh_command) {
 	// TODO: Run program correctly if your own program name conflict with the system program
 	// TODO: WILDCARD
 	// TODO: Job control
-	// TODO: Support "" and '' in options...done
+	// TODO: Support "" and '' in args
 	// TODO: Support pipe
 	// TODO: Support redirect
 	char command[BUF_SIZE] = {0};
@@ -52,30 +52,6 @@ void command_exec(char *shsh_command) {
 	}
 
 	args[0] = prog;
-
-
-	// Built-in commands
-	if (strcmp(prog, "cd") == 0) {
-		char arg[BUF_SIZE] = {0};
-		for (command_i++; command[command_i] != ' ' && command_i < (int)strlen(command); command_i++) {
-			arg[strlen(arg)] = command[command_i];
-		}
-		if (strlen(arg) > 0) {
-			builtin_cd(arg);
-		} else {
-			builtin_cd("~");
-		}
-		return;
-	} else if (strcmp(prog, "pwd") == 0) {
-		builtin_pwd();
-		return;
-	} else if (strcmp(prog, "help") == 0) {
-		builtin_help();
-		return;
-	} else if (strcmp(prog, "exit") == 0) {
-		builtin_exit();
-		return;
-	}
 
 	// args
 	for (int i = 1; i < BUF_SIZE && command_i < (int)strlen(command); i++, command_i++) {
@@ -109,6 +85,25 @@ void command_exec(char *shsh_command) {
 				if (filenames[j+1] != NULL) i++;
 			}
 		}
+	}
+
+	// Built-in commands
+	if (strcmp(prog, "cd") == 0) {
+		if (args[1] != NULL) {
+			builtin_cd(args[1]);
+		} else {
+			builtin_cd("~");
+		}
+		return;
+	} else if (strcmp(prog, "pwd") == 0) {
+		builtin_pwd();
+		return;
+	} else if (strcmp(prog, "help") == 0) {
+		builtin_help();
+		return;
+	} else if (strcmp(prog, "exit") == 0) {
+		builtin_exit();
+		return;
 	}
 
 	int pid = fork();

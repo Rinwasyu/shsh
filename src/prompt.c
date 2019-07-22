@@ -219,7 +219,7 @@ void prompt_loop() {
 				}
 				mode = Insert;
 			} else if (c == 126) { // Delete
-				if ((int)strlen(command) > 0 && cursor_x < strlen(command)) {
+				if ((int)strlen(command) > 0 && cursor_x < (int)strlen(command)) {
 					int s_len = (int)strlen(command);
 					for (int i = cursor_x; i < s_len; i++) {
 						command[i] = command[i + 1];

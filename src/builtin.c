@@ -38,6 +38,9 @@ void builtin_cd(char *arg) {
 
 	if (arg[0] == '/') {
 		snprintf(shsh_pwd + strlen(shsh_pwd), BUF_SIZE - strlen(shsh_pwd), "%s", arg);
+	} else if (strcmp(arg, "~") == 0) {
+		memset(shsh_pwd, 0, sizeof(char) * BUF_SIZE);
+		snprintf(shsh_pwd, BUF_SIZE, "%s", getenv("HOME"));
 	} else if (strcmp(arg, "..") == 0) {
 		for (int i = strlen(shsh_pwd) - 1; i > 0; i--) {
 			if (shsh_pwd[i] != '/') {
