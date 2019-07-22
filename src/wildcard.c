@@ -37,16 +37,20 @@ int wildcard_match(char *wc, char *str) {
 				break;
 			}
 
-			int is_match2 = 0;
-			for (int i = str_i; i < (int)strlen(str); i++) {
-				if (wildcard_match(&wc[wc_i + 1], &str[i])) {
-					is_match2 = 1;
+			if (wc[wc_i + 1] == '*') {
+				str_i--;
+			} else {
+				int is_match2 = 0;
+				for (int i = str_i; i < (int)strlen(str); i++) {
+					if (wildcard_match(&wc[wc_i + 1], &str[i])) {
+						is_match2 = 1;
+					}
 				}
+				is_match = is_match2;
+				wc_i = (int)strlen(wc);
+				str_i = (int)strlen(str);
+				break;
 			}
-			is_match = is_match2;
-			wc_i = (int)strlen(wc);
-			str_i = (int)strlen(str);
-			break;
 		} else if (wc[wc_i] != str[str_i]) {
 			is_match = 0;
 		}
