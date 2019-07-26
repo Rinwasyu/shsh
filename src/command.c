@@ -42,11 +42,14 @@ void command_exec(char *shsh_command) {
 	char prog[BUF_SIZE] = {0};
 	char *args[BUF_SIZE] = {NULL};
 
+	signal(SIGINT, SIG_IGN);
+
 	snprintf(command, BUF_SIZE, "%s", shsh_command);
 
 	if (strlen(command) <= 0) return;
 
 	int command_i = 0;
+	for (; command_i < (int)strlen(command) && command[command_i] == ' '; command_i++); // Skip
 	for (int i = 0; command_i < (int)strlen(command) && command[command_i] != ' '; i++, command_i++) {
 		prog[i] = command[command_i];
 	}
@@ -130,6 +133,5 @@ void command_exec(char *shsh_command) {
 
 		exit(-1);
 	}
-	signal(SIGINT, SIG_IGN);
 	waitpid(pid, NULL, 0);
 }
