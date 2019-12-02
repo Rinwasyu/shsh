@@ -1,33 +1,23 @@
 .PHONY: all clean
 
-CC := gcc
-CFLAGS := -Wall -Wextra -O3
+CC           := gcc
+CFLAGS       := -Wall -Wextra -O3
 
-all: shsh
+PROGNAME     := shsh
+EXECUTABLE   := $(PROGNAME)
+SOURCES      := $(wildcard *.c)
+OBJECTS      := $(SOURCES:%.c=%.o)
+DEPENDENCIES := $(SOURCES:%.c=%.d)
 
-shsh: shsh.o wildcard.o builtin.o command.o filenames.o option.o prompt.o
+all: $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
 	$(CC) -o $@ $^
 
-shsh.o: shsh.c
-	$(CC) $(CFLAGS) -c $^
-
-wildcard.o: wildcard.c
-	$(CC) $(CFLAGS) -c $^
-
-builtin.o: builtin.c
-	$(CC) $(CFLAGS) -c $^
-
-command.o: command.c
-	$(CC) $(CFLAGS) -c $^
-
-filenames.o: filenames.c
-	$(CC) $(CFLAGS) -c $^
-
-option.o: option.c
-	$(CC) $(CFLAGS) -c $^
-
-prompt.o: prompt.c
-	$(CC) $(CFLAGS) -c $^
+%.o: %.c
+	$(CC) $(CFLAGS) -MD -c $<
 
 clean:
-	rm -f *.o shsh
+	rm -f $(EXECUTABLE) $(OBJECTS) $(DEPENDENCIES)
+
+-include $(DEPENDENCIES)
