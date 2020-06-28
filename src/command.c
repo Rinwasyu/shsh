@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Rinwasyu
+ * Copyright 2019,2020 Rinwasyu
  *
  * This file is part of shsh.
  *
@@ -38,89 +38,54 @@ void command_exec(char *shsh_command) {
 	// TODO: Support "" and '' in args
 	// TODO: Support pipe
 	// TODO: Support redirect
-	char command[BUF_SIZE] = {0};
-	char prog[BUF_SIZE] = {0};
-	char *args[BUF_SIZE] = {NULL};
 
+	char *args[BUF_SIZE] = {0};
+	int n_args = 0;
 	signal(SIGINT, SIG_IGN);
 
-	snprintf(command, BUF_SIZE, "%s", shsh_command);
-
-	if (strlen(command) <= 0) return;
-
-	int command_i = 0;
-	for (; command_i < (int)strlen(command) && command[command_i] == ' '; command_i++); // Skip
-	for (int i = 0; command_i < (int)strlen(command) && command[command_i] != ' '; i++, command_i++) {
-		prog[i] = command[command_i];
+	for (int i = 0; i < (int)strlen(shsh_command); i++) {
+		if (shsh_command[i] == ' ') {
+			continue;
+		} else {
+			char *arg = (char *)malloc(sizeof(char) * BUF_SIZE);
+			memset(arg, 0, sizeof(char) * BUF_SIZE);
+			for (; strlen(arg) < BUF_SIZE && i < (int)strlen(shsh_command) && shsh_command[i] != ' '; i++) {
+				arg[strlen(arg)] = shsh_command[i];
+			}
+			// wildcard (maybe filenames_wildcard is not working correctly)
+			char **file = filenames_wildcard(".", arg);
+			for (int j = 0; file[j] != NULL; j++) {
+				args[n_args] = file[j];
+				n_args++;
+			}
+		}
 	}
 
-	/* What is this code?
-	// Variable
-	for (int i = 0; i < (int)strlen(prog); i++) {
-		if (prog[i] == '$') {
-			memset(&prog[i], 0, sizeof(char) * (BUF_SIZE-i));
-			snprintf(&prog[i], BUF_SIZE - i, "%s", getenv(&prog[i+1]));
-			break;
-		}
-	}*/
-
-	args[0] = prog;
+	if (n_args == 0)
+		return;
 
 	if (strlen(args[0]) <= 0)
 		return;
 
-	// args
-	for (int i = 1; i < BUF_SIZE && command_i < (int)strlen(command); i++, command_i++) {
-		char arg[BUF_SIZE] = {0};
-		for (; command[command_i] == ' ' && command_i < (int)strlen(command); command_i++); // Skip
-		if (command[command_i] == '"' || command[command_i] == '\'' || command[command_i] == '`') {
-			char q_mark = command[command_i];
-			for (command_i++; command[command_i] != q_mark && command_i < (int)strlen(command); command_i++) {
-				if (command[command_i] == '\\') {
-					if (command_i+1 < (int)strlen(command)) {
-						if (command[command_i+1] == '\'' || command[command_i+1] == '"')
-							command_i++;
-					} else {
-						printf("Error\n");
-					}
-				}
-				arg[strlen(arg)] = command[command_i];
-			}
-			args[i] = (char *)malloc(sizeof(char) * BUF_SIZE);
-			memset(args[i], 0, sizeof(char) * BUF_SIZE);
-			snprintf(args[i], BUF_SIZE, "%s", arg);
-		} else {
-			for (; command[command_i] != ' ' && command_i < (int)strlen(command); command_i++) {
-				arg[strlen(arg)] = command[command_i];
-			}
-			char **filenames = filenames_wildcard(".", arg);
-			for (int j = 0; filenames[j] != NULL && i < BUF_SIZE; j++) {
-				args[i] = (char *)malloc(sizeof(char) * BUF_SIZE);
-				memset(args[i], 0, sizeof(char) * BUF_SIZE);
-				snprintf(args[i], BUF_SIZE, "%s", filenames[j]);
-				if (filenames[j+1] != NULL) i++;
+	for (int i = 0; i < n_args; i++) {
+		for (int j = 0; j < (int)strlen(args[i]); j++) {
+			if (args[i][j] == '\'' || args[i][j] == '"' || args[i][j] == '`') {
+				char qmark = args[i][j];
+				char *new = (char *)malloc(sizeof(char) * BUF_SIZE);
+				memset(new, 0, sizeof(char) * BUF_SIZE);
+				snprintf(new, j+1, "%s", args[i]);
+				for (j++; args[i][j] != qmark && j < (int)strlen(args[i]); j++)
+					new[strlen(new)] = args[i][j];
+				snprintf(&new[strlen(new)], BUF_SIZE - j, "%s", &args[i][j+1]);
+				free(args[i]);
+				args[i] = new;
 			}
 		}
 	}
 
 	// Built-in commands
-	if (strcmp(args[0], "cd") == 0) {
-		if (args[1] != NULL) {
-			builtin_cd(args[1]);
-		} else {
-			builtin_cd("~");
-		}
+	if (builtin_exec(args) == 0)
 		return;
-	} else if (strcmp(args[0], "pwd") == 0) {
-		builtin_pwd();
-		return;
-	} else if (strcmp(args[0], "help") == 0) {
-		builtin_help();
-		return;
-	} else if (strcmp(args[0], "exit") == 0) {
-		builtin_exit();
-		return;
-	}
 
 	int pid = fork();
 	if (pid == 0) {

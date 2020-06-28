@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Rinwasyu
+ * Copyright 2019,2020 Rinwasyu
  *
  * This file is part of shsh.
  *
@@ -28,7 +28,29 @@
 #include "filenames.h"
 #include "builtin.h"
 
-void builtin_cd(char *arg) {
+int builtin_exec(char **args) {
+	if (strcmp(args[0], "cd") == 0) {
+		if (args[1] != NULL) {
+			builtin_command_cd(args[1]);
+		} else {
+			builtin_command_cd("~");
+		}
+		return 0;
+	} else if (strcmp(args[0], "pwd") == 0) {
+		builtin_command_pwd();
+		return 0;
+	} else if (strcmp(args[0], "help") == 0) {
+		builtin_command_help();
+		return 0;
+	} else if (strcmp(args[0], "exit") == 0) {
+		builtin_command_exit();
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
+void builtin_command_cd(char *arg) {
 	// TODO: WILDCARD
 	// TODO: Add more features
 	char shsh_pwd[BUF_SIZE] = {0};
@@ -69,15 +91,15 @@ void builtin_cd(char *arg) {
 	}
 }
 
-void builtin_pwd() {
+void builtin_command_pwd() {
 	printf("%s\n", getenv("PWD"));
 }
 
-void builtin_help() {
+void builtin_command_help() {
 	printf("builtin commands :\n");
 	printf("cd, pwd, help(this)\n");
 }
 
-int builtin_exit() {
+int builtin_command_exit() {
 	exit(0);
 }
