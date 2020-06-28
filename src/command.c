@@ -54,7 +54,20 @@ void command_exec(char *shsh_command) {
 		prog[i] = command[command_i];
 	}
 
+	/* What is this code?
+	// Variable
+	for (int i = 0; i < (int)strlen(prog); i++) {
+		if (prog[i] == '$') {
+			memset(&prog[i], 0, sizeof(char) * (BUF_SIZE-i));
+			snprintf(&prog[i], BUF_SIZE - i, "%s", getenv(&prog[i+1]));
+			break;
+		}
+	}*/
+
 	args[0] = prog;
+
+	if (strlen(args[0]) <= 0)
+		return;
 
 	// args
 	for (int i = 1; i < BUF_SIZE && command_i < (int)strlen(command); i++, command_i++) {
@@ -91,20 +104,20 @@ void command_exec(char *shsh_command) {
 	}
 
 	// Built-in commands
-	if (strcmp(prog, "cd") == 0) {
+	if (strcmp(args[0], "cd") == 0) {
 		if (args[1] != NULL) {
 			builtin_cd(args[1]);
 		} else {
 			builtin_cd("~");
 		}
 		return;
-	} else if (strcmp(prog, "pwd") == 0) {
+	} else if (strcmp(args[0], "pwd") == 0) {
 		builtin_pwd();
 		return;
-	} else if (strcmp(prog, "help") == 0) {
+	} else if (strcmp(args[0], "help") == 0) {
 		builtin_help();
 		return;
-	} else if (strcmp(prog, "exit") == 0) {
+	} else if (strcmp(args[0], "exit") == 0) {
 		builtin_exit();
 		return;
 	}
@@ -123,13 +136,13 @@ void command_exec(char *shsh_command) {
 			if (prog_path[strlen(prog_path)-1] != '/') { // /hogehoge →  /hogehoge/
 				snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), "/");
 			}
-			snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), "%s", prog);
+			snprintf(prog_path + strlen(prog_path), BUF_SIZE - strlen(prog_path), "%s", args[0]);
 			// PATH/prog
 			execv(prog_path, args);
 		} while ((path = strtok(NULL, ":")) != NULL);
 		// ./prog
-		execv(prog, args);
-		printf("%s: %s: command not found\n", PROG_NAME, command);
+		execv(args[0], args);
+		printf("%s: %s: command not found\n", PROG_NAME, args[0]);
 
 		exit(-1);
 	}
