@@ -47,6 +47,14 @@ void command_exec(char *shsh_command) {
 	for (int i = 0; i < (int)strlen(shsh_command); i++) {
 		if (shsh_command[i] == ' ') {
 			continue;
+		} else if (shsh_command[i] == '\'' || shsh_command[i] == '"') {
+			char qmark = shsh_command[i];
+			char *arg = (char *)malloc(sizeof(char) * BUF_SIZE);
+			memset(arg, 0, sizeof(char) * BUF_SIZE);
+			for (i++; shsh_command[i] != qmark && i < (int)strlen(shsh_command); i++)
+				arg[strlen(arg)] = shsh_command[i];
+			args[n_args] = arg;
+			n_args++;
 		} else {
 			char *arg = (char *)malloc(sizeof(char) * BUF_SIZE);
 			memset(arg, 0, sizeof(char) * BUF_SIZE);
@@ -67,22 +75,6 @@ void command_exec(char *shsh_command) {
 
 	if (strlen(args[0]) <= 0)
 		return;
-
-	for (int i = 0; i < n_args; i++) {
-		for (int j = 0; j < (int)strlen(args[i]); j++) {
-			if (args[i][j] == '\'' || args[i][j] == '"' || args[i][j] == '`') {
-				char qmark = args[i][j];
-				char *new = (char *)malloc(sizeof(char) * BUF_SIZE);
-				memset(new, 0, sizeof(char) * BUF_SIZE);
-				snprintf(new, j+1, "%s", args[i]);
-				for (j++; args[i][j] != qmark && j < (int)strlen(args[i]); j++)
-					new[strlen(new)] = args[i][j];
-				snprintf(&new[strlen(new)], BUF_SIZE - j, "%s", &args[i][j+1]);
-				free(args[i]);
-				args[i] = new;
-			}
-		}
-	}
 
 	// Built-in commands
 	if (builtin_exec(args) == 0)
