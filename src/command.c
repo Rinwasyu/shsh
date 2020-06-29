@@ -47,25 +47,39 @@ void command_exec(char *shsh_command) {
 	for (int i = 0; i < (int)strlen(shsh_command); i++) {
 		if (shsh_command[i] == ' ') {
 			continue;
-		} else if (shsh_command[i] == '\'' || shsh_command[i] == '"') {
-			char qmark = shsh_command[i];
-			char *arg = (char *)malloc(sizeof(char) * BUF_SIZE);
-			memset(arg, 0, sizeof(char) * BUF_SIZE);
-			for (i++; shsh_command[i] != qmark && i < (int)strlen(shsh_command); i++)
-				arg[strlen(arg)] = shsh_command[i];
-			args[n_args] = arg;
-			n_args++;
 		} else {
+			char ignore = 0;
 			char *arg = (char *)malloc(sizeof(char) * BUF_SIZE);
 			memset(arg, 0, sizeof(char) * BUF_SIZE);
-			for (; strlen(arg) < BUF_SIZE && i < (int)strlen(shsh_command) && shsh_command[i] != ' '; i++) {
-				arg[strlen(arg)] = shsh_command[i];
-			}
-			// wildcard (maybe filenames_wildcard is not working correctly)
-			char **file = filenames_wildcard(".", arg);
-			for (int j = 0; file[j] != NULL; j++) {
-				args[n_args] = file[j];
+			if (shsh_command[i] == '\'' || shsh_command[i] == '"') {
+				char qmark = shsh_command[i];
+				for (i++; (int)strlen(arg) < BUF_SIZE && (shsh_command[i] != qmark || ignore) && i < (int)strlen(shsh_command); i++) {
+					if (ignore) {
+						if (shsh_command[i] == '"' || shsh_command[i] == '\\')
+							arg[strlen(arg)-1] = '\0';
+						ignore = 0;
+					} else if (shsh_command[i] == '\\') {
+						ignore = 1;
+					}
+					arg[strlen(arg)] = shsh_command[i];
+				}
+				args[n_args] = arg;
 				n_args++;
+			} else {
+				for (; (int)strlen(arg) < BUF_SIZE && (shsh_command[i] != ' ' || ignore) && i < (int)strlen(shsh_command); i++) {
+					if (shsh_command[i] == '\\') {
+						ignore = 1;
+					} else {
+						ignore = 0;
+						arg[strlen(arg)] = shsh_command[i];
+					}
+				}
+				// wildcard (maybe filenames_wildcard is not working correctly)
+				char **file = filenames_wildcard(".", arg);
+				for (int j = 0; file[j] != NULL; j++) {
+					args[n_args] = file[j];
+					n_args++;
+				}
 			}
 		}
 	}

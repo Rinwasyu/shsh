@@ -25,7 +25,7 @@
 
 #define PROG_NAME "shsh"
 #define PROG_FULLNAME "(((ง'ω')و三 ง'ω')ڡ≡ shsh"
-#define PROG_VERSION "0.0.4.10-alpha"
+#define PROG_VERSION "0.0.4.11-alpha"
 
 void shsh_init(void);
 void shsh_exit(void);
