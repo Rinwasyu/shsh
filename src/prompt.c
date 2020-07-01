@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Rinwasyu
+ * Copyright 2019,2020 Rinwasyu
  *
  * This file is part of shsh.
  *
@@ -68,7 +68,9 @@ void prompt_loop() {
 	// TODO: REFACTOR
 	int c;
 	char *command = (char *)malloc(sizeof(char) * BUF_SIZE);
+	if (command == NULL) exit(1);
 	char **command_history = (char **)malloc(sizeof(char *) * BUF_SIZE);
+	if (command_history == NULL) exit(1);
 	int history_b = 0;
 	int history_e = 0;
 	int history_n = 0;
@@ -101,6 +103,7 @@ void prompt_loop() {
 
 				if (history_n == 0 || (strcmp(command_history[(BUF_SIZE + history_e-1) % BUF_SIZE], command) != 0 && (int)strlen(command) > 0)) {
 					command_history[history_e] = (char *)malloc(sizeof(char) * BUF_SIZE);
+					if (command_history[history_e] == NULL) exit(1);
 					snprintf(command_history[history_e], BUF_SIZE, "%s", command);
 					history_e = (history_e + 1) % BUF_SIZE;
 					if (history_b == history_e)

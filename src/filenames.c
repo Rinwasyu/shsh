@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Rinwasyu
+ * Copyright 2019,2020 Rinwasyu
  *
  * This file is part of shsh.
  *
@@ -28,7 +28,8 @@
 #include "filenames.h"
 
 char **filenames_wildcard(char *dirname, char *wildcard) {
-	char **filenames = (char **)malloc(sizeof(char *) * BUF_SIZE);;
+	char **filenames = (char **)malloc(sizeof(char *) * BUF_SIZE);
+	if (filenames == NULL) exit(1);
 	int filenames_i = 0;
 
 	DIR *dir;

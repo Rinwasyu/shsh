@@ -50,6 +50,7 @@ void command_exec(char *shsh_command) {
 		} else {
 			char ignore = 0;
 			char *arg = (char *)malloc(sizeof(char) * BUF_SIZE);
+			if (arg == NULL) exit(1);
 			memset(arg, 0, sizeof(char) * BUF_SIZE);
 			if (shsh_command[i] == '\'' || shsh_command[i] == '"') {
 				char qmark = shsh_command[i];
