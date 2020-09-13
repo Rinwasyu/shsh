@@ -1,5 +1,5 @@
 /*
- * Copyright 2019,2020 Rinwasyu
+ * Copyright 2020 Rinwasyu
  *
  * This file is part of shsh.
  *
@@ -18,16 +18,4 @@
  *
  */
 
-#ifndef SHSH_SHSH_H
-#define SHSH_SHSH_H
-
-#define BUF_SIZE 1024
-
-#define PROG_NAME "shsh"
-#define PROG_FULLNAME "(((ง'ω')و三 ง'ω')ڡ≡ shsh"
-#define PROG_VERSION "0.0.4.14-alpha"
-
-void shsh_init(void);
-void shsh_exit(void);
-
-#endif
+int script_exec(char *script);

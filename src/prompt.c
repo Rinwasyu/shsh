@@ -25,8 +25,8 @@
 #include <signal.h>
 
 #include "shsh.h"
-#include "command.h"
 #include "prompt.h"
+#include "script.h"
 
 void prompt_init() {
 	system("stty stop undef");
@@ -98,7 +98,7 @@ void prompt_loop() {
 				printf("\n");
 
 				prompt_exit();
-				command_exec(command);
+				script_exec(command);
 				prompt_init();
 
 				if (history_n == 0 || (strcmp(command_history[(BUF_SIZE + history_e-1) % BUF_SIZE], command) != 0 && (int)strlen(command) > 0)) {
