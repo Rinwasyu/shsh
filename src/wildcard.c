@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Rinwasyu
+ * Copyright 2019,2020 Rinwasyu
  *
  * This file is part of shsh.
  *
@@ -22,7 +22,7 @@
 
 #include "wildcard.h"
 
-int wildcard_match(char *wc, char *str) {
+int wildcard_match(char *wc, char *str) { // WIP
 	int is_match = 1;
 	int wc_i = 0;
 	int str_i = 0;
@@ -53,6 +53,7 @@ int wildcard_match(char *wc, char *str) {
 			}
 		} else if (wc[wc_i] != str[str_i]) {
 			is_match = 0;
+			break;
 		}
 		wc_i++;
 		str_i++;

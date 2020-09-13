@@ -75,7 +75,7 @@ void command_exec(char *shsh_command) {
 						arg[strlen(arg)] = shsh_command[i];
 					}
 				}
-				// wildcard (maybe filenames_wildcard is not working correctly)
+				// wildcard (WIP)
 				char **file = filenames_wildcard(".", arg);
 				for (int j = 0; file[j] != NULL; j++) {
 					args[n_args] = file[j];
